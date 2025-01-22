@@ -42,6 +42,7 @@ const doctorsController = {
       return res
         .status(400)
         .json({ status: "KO", message: "Invalid Parameter" });
+
     const sqlShowDoctors = `SELECT doctors.id, 
        doctors.name, 
        doctors.surname, 
@@ -126,14 +127,11 @@ const doctorsController = {
         .status(400)
         .json({ status: "KO", message: "Address Too Short" });
 
-    // # Email Arledy Exists in DB
-    const sqlCheckEmail = `SELECT doctors.email FROM bdoctors.doctors WHERE doctors.email = ?;`;
-    connection.query(sqlCheckEmail, [email], (err, results) => {
-      if (results.length)
-        return res
-          .status(400)
-          .json({ status: "KO", message: "Email Arledy Exists" });
-    });
+    // # Cellphone Number is Valid
+    if (!isValidCellphoneNumber(cellphone_number))
+      return res
+        .status(400)
+        .json({ status: "KO", message: "Cellphone Number is Not Valid" });
 
     // # Email is Valid
     if (!isValidEmail(email))
@@ -141,11 +139,16 @@ const doctorsController = {
         .status(400)
         .json({ status: "KO", message: "Email is Not Valid" });
 
-    // # Cellphone Number is Valid
-    if (!isValidCellphoneNumber(cellphone_number))
-      return res
-        .status(400)
-        .json({ status: "KO", message: "Cellphone Number is Not Valid" });
+    // # Email Arledy Exists in DB
+    const sqlCheckEmail = `SELECT doctors.email FROM bdoctors.doctors WHERE doctors.email = ?;`;
+    connection.query(sqlCheckEmail, [email], (err, results) => {
+      if (err)
+        return res.status(500).json({ status: "KO", message: err.sqlMessage });
+      if (results.length)
+        return res
+          .status(400)
+          .json({ status: "KO", message: "Email Arledy Exists" });
+    });
 
     const sqlStore =
       "INSERT INTO `bdoctors`.`doctors` (`name`, `surname`, `email`, `cellphone_number`, `address`, `medical_specialization`) VALUES (?, ?, ?, ?, ?, ?);";
@@ -176,6 +179,10 @@ const doctorsController = {
       medical_specialization,
     } = req.body;
     const doctorId = parseInt(req.params.id);
+    if (isNaN(doctorId) || doctorId < 1)
+      return res
+        .status(400)
+        .json({ status: "KO", message: "Invalid Parameter" });
 
     // # Input Empty
     if (
@@ -241,6 +248,12 @@ const doctorsController = {
           return res
             .status(500)
             .json({ status: "KO", message: err.sqlMessage });
+
+        if (!results.length)
+          return res
+            .status(404)
+            .json({ status: "KO", message: "Doctor Not Found" });
+
         return res
           .status(200)
           .json({ status: "OK", message: "Replaced Succesfully" });
@@ -253,34 +266,113 @@ const doctorsController = {
     const allEntries = Object.entries(allKeys);
     const allEntriesKey = [];
     const doctorId = parseInt(req.params.id);
-    let sqlModify = "UPDATE bdoctors.doctors SET ";
-    allEntries.forEach((el, index) => {
-      if (el[0] && allEntries.length - 1 !== index)
-        sqlModify += `${el[0]} = ?, `;
-      if (allEntries.length - 1 === index) sqlModify += `${el[0]} = ? `;
-      allEntriesKey.push(el[1]);
-    });
-    sqlModify += "WHERE (id = ?);";
 
-    connection.query(
-      sqlModify,
-      [...allEntriesKey, doctorId],
-      (err, results) => {
-        if (err)
-          return res
-            .status(500)
-            .json({ status: "KO", message: err.sqlMessage });
-        return res.status(200).send("Modified Succesfully");
+    // # Data validation
+    if (isNaN(doctorId) || doctorId < 1)
+      return res
+        .status(400)
+        .json({ status: "KO", message: "Invalid Parameter" });
+
+    // Funzione per verificare se l'email esiste già
+    const checkEmailExistence = (email) => {
+      return new Promise((resolve, reject) => {
+        const sqlCheckEmail = `SELECT doctors.email FROM bdoctors.doctors WHERE doctors.email = ?;`;
+        connection.query(sqlCheckEmail, [email], (err, results) => {
+          if (err) return reject(err);
+          if (results.length) return reject("Email Already Exists");
+          resolve();
+        });
+      });
+    };
+
+    // Funzione di validazione
+    const validateFields = async () => {
+      for (const [key, value] of allEntries) {
+        switch (key) {
+          case "name":
+          case "surname":
+            if (value.length < 3)
+              return res
+                .status(400)
+                .json({ status: "KO", message: "Name or Surname Too Short" });
+            break;
+          case "address":
+            if (value.length < 5)
+              return res
+                .status(400)
+                .json({ status: "KO", message: "Address Too Short" });
+            break;
+          case "email":
+            if (!isValidEmail(value))
+              return res
+                .status(400)
+                .json({ status: "KO", message: "Email is Not Valid" });
+            try {
+              await checkEmailExistence(value);
+            } catch (err) {
+              return res.status(400).json({ status: "KO", message: err });
+            }
+            break;
+          case "cellphone_number":
+            if (!isValidCellphoneNumber(value))
+              return res.status(400).json({
+                status: "KO",
+                message: "Cellphone Number is Not Valid",
+              });
+            break;
+        }
       }
-    );
+      return null;
+    };
+
+    // Esegui la validazione
+    validateFields().then((error) => {
+      if (error) return;
+      let sqlModify = "UPDATE bdoctors.doctors SET ";
+      allEntries.forEach((el, index) => {
+        if (el[0] && allEntries.length - 1 !== index)
+          sqlModify += `${el[0]} = ?, `;
+        if (allEntries.length - 1 === index) sqlModify += `${el[0]} = ? `;
+        allEntriesKey.push(el[1]);
+      });
+      sqlModify += "WHERE (id = ?);";
+
+      connection.query(
+        sqlModify,
+        [...allEntriesKey, doctorId],
+        (err, results) => {
+          if (err)
+            return res
+              .status(500)
+              .json({ status: "KO", message: err.sqlMessage });
+          if (!results.affectedRows)
+            return res
+              .status(404)
+              .json({ status: "KO", message: "Doctor Not Found" });
+
+          return res
+            .status(200)
+            .json({ status: "OK", message: "Modified Successfully" });
+        }
+      );
+    });
   },
 
   destroy(req, res) {
     const doctorId = parseInt(req.params.id);
+    if (isNaN(doctorId) || doctorId < 1)
+      return res
+        .status(400)
+        .json({ status: "KO", message: "Invalid Parameter" });
+
     const sqlDestroy = "DELETE FROM `bdoctors`.`doctors` WHERE (`id` = ?);";
     connection.query(sqlDestroy, [doctorId], (err, results) => {
       if (err)
         return res.status(500).json({ status: "KO", message: err.sqlMessage });
+      if (!results.length)
+        return res
+          .status(404)
+          .json({ status: "KO", message: "Doctor Not Found" });
       return res
         .status(200)
         .json({ status: "OK", message: "Deleted Succesfully" });
