@@ -1,5 +1,17 @@
 import { connection } from "../db/connection.js";
 
+function isValidEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+function isValidCellphoneNumber(cellphone_number) {
+  const cellphoneNumberRegex = /^\+?[0-9]+$/;
+  if (cellphone_number.length > 13 || cellphone_number.length < 13)
+    return false;
+  return cellphoneNumberRegex.test(cellphone_number);
+}
+
 const doctorsController = {
   index(req, res) {
     const sqlIndex = `SELECT doctors.id, doctors.name, doctors.surname, doctors.medical_specialization FROM doctors;`;
@@ -108,24 +120,12 @@ const doctorsController = {
     });
 
     // # Email is Valid
-    function isValidEmail(email) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      return emailRegex.test(email);
-    }
-
     if (!isValidEmail(email))
       return res
         .status(400)
         .json({ status: "KO", message: "Email is Not Valid" });
 
     // # Cellphone Number is Valid
-    function isValidCellphoneNumber(cellphone_number) {
-      const cellphoneNumberRegex = /^\+?[0-9]+$/;
-      if (cellphone_number.length > 13 || cellphone_number.length < 13)
-        return false;
-      return cellphoneNumberRegex.test(cellphone_number);
-    }
-
     if (!isValidCellphoneNumber(cellphone_number))
       return res
         .status(400)
@@ -150,12 +150,114 @@ const doctorsController = {
     );
   },
 
-  // # BONUS --------
   update(req, res) {
-    res.send("update");
+    const {
+      name,
+      surname,
+      email,
+      cellphone_number,
+      address,
+      medical_specialization,
+    } = req.body;
+    const doctorId = parseInt(req.params.id);
+
+    // # Input Empty
+    if (
+      !name ||
+      !surname ||
+      !email ||
+      !cellphone_number ||
+      !address ||
+      !medical_specialization
+    )
+      return res
+        .status(400)
+        .json({ status: "KO", message: "Input Cannot be Empty" });
+
+    // # Name or Surname 3 or less characters
+    if (name.length < 3 || surname.length < 3)
+      return res
+        .status(400)
+        .json({ status: "KO", message: "Name or Surname Too Short" });
+
+    // # Address 5 or less characters
+    if (address.length < 5)
+      return res
+        .status(400)
+        .json({ status: "KO", message: "Address Too Short" });
+
+    // # Email Arledy Exists in DB
+    const sqlCheckEmail = `SELECT doctors.email FROM bdoctors.doctors WHERE doctors.email = ?;`;
+    connection.query(sqlCheckEmail, [email], (err, results) => {
+      if (results.length)
+        return res
+          .status(400)
+          .json({ status: "KO", message: "Email Arledy Exists" });
+    });
+
+    // # Email is Valid
+    if (!isValidEmail(email))
+      return res
+        .status(400)
+        .json({ status: "KO", message: "Email is Not Valid" });
+
+    // # Cellphone Number is Valid
+    if (!isValidCellphoneNumber(cellphone_number))
+      return res
+        .status(400)
+        .json({ status: "KO", message: "Cellphone Number is Not Valid" });
+
+    const sqlUpdate =
+      "UPDATE `bdoctors`.`doctors` SET `name` = ?, `surname` = ?, `email` = ?, `cellphone_number` = ?, `address` = ?, `medical_specialization` = ? WHERE (`id` = ?);";
+    connection.query(
+      sqlUpdate,
+      [
+        name,
+        surname,
+        email,
+        cellphone_number,
+        address,
+        medical_specialization,
+        doctorId,
+      ],
+      (err, results) => {
+        if (err)
+          return res
+            .status(500)
+            .json({ status: "KO", message: err.sqlMessage });
+        return res
+          .status(200)
+          .json({ status: "OK", message: "Replaced Succesfully" });
+      }
+    );
   },
+
+  // # BONUS --------
   modify(req, res) {
-    res.send("modify");
+    const { ...allKeys } = req.body;
+    const allEntries = Object.entries(allKeys);
+    const allEntriesKey = [];
+    const doctorId = parseInt(req.params.id);
+    let sqlModify = "UPDATE bdoctors.doctors SET ";
+    allEntries.forEach((el, index) => {
+      if (el[0] && allEntries.length - 1 !== index)
+        sqlModify += `${el[0]} = ?, `;
+      if (allEntries.length - 1 === index) sqlModify += `${el[0]} = ? `;
+      allEntriesKey.push(el[1]);
+    });
+    sqlModify += "WHERE (id = ?);";
+
+    connection.query(
+      sqlModify,
+      [...allEntriesKey, doctorId],
+      (err, results) => {
+        if (err)
+          return res
+            .status(500)
+            .json({ status: "KO", message: err.sqlMessage });
+        return res.status(200).send("Modified Succesfully");
+      }
+    );
   },
   // # BONUS --------
 
