@@ -1,6 +1,6 @@
 # Guida all'Uso del Controller dei Medici
 
-Questo documento spiega come utilizzare il modulo `doctorsController`, che gestisce le operazioni relative ai dati dei medici in un'applicazione, utilizza le rotte e le validazioni appropriate per garantire il corretto funzionamento.
+Questo documento descrive come utilizzare il modulo `doctorsController`, responsabile della gestione delle operazioni relative ai dati dei medici in un'applicazione. Include le rotte disponibili, le validazioni e i possibili messaggi di errore per garantire il corretto funzionamento.
 
 ---
 
@@ -9,27 +9,27 @@ Questo documento spiega come utilizzare il modulo `doctorsController`, che gesti
 **Scopo**: Recupera tutti i medici dal database.
 
 - **Rotta**: `GET /doctors`
-- **Descrizione**: Recupera un elenco di medici con i campi `id`, `name`, `surname` e `medical_specialization`.
+- **Descrizione**: Restituisce un elenco di medici con i campi principali: `id`, `name`, `surname` e `medical_specialization`.
 - **Risposta**:
-  - Success: Restituisce un array di record di medici.
-  - Error: Restituisce uno stato 500 con un messaggio di Error.
+  - **Successo**: Restituisce un array di record dei medici.
+  - **Errore**: Restituisce uno stato 500 con un messaggio di errore generico se si verifica un problema del server.
 
 ---
 
 ## Metodo Show
 
-**Scopo**: Recupera i dettagli di un medico specifico e le sue recensioni.
+**Scopo**: Recupera i dettagli di un medico specifico e le sue recensioni associate.
 
 - **Rotta**: `GET /doctors/:id`
 - **Parametri**:
   - `id` (obbligatorio): ID del medico.
-- **Descrizione**: Recupera informazioni dettagliate su un medico e le sue recensioni associate.
+- **Descrizione**: Restituisce informazioni dettagliate su un medico specifico, incluse le recensioni relative.
 - **Risposta**:
-  - Success: Restituisce un oggetto con le sue recensioni.
-  - Error:
-    - 400: Parametro non valido.
-    - 404: Medico o recensioni non trovati.
-    - 500: Error SQL.
+  - **Successo**: Restituisce un oggetto JSON con i dettagli del medico e le sue recensioni.
+  - **Errori**:
+    - **400**: Parametro non valido.
+    - **404**: Medico o recensioni non trovati.
+    - **500**: Errore SQL o problema interno del server.
 
 ---
 
@@ -49,13 +49,13 @@ Questo documento spiega come utilizzare il modulo `doctorsController`, che gesti
   - I campi non possono essere vuoti.
   - `name` e `surname` devono avere almeno 3 caratteri.
   - `address` deve avere almeno 5 caratteri.
-  - L'email deve essere valida e non già presente nel database.
-  - Il numero di cellulare deve essere valido.
+  - L'email deve essere valida e unica (non già presente nel database).
+  - Il numero di cellulare deve essere valido (formato standard internazionale).
 - **Risposta**:
-  - Success: Restituisce uno stato 201 con un messaggio di Success.
-  - Error:
-    - 400: Errori di validazione dell'input.
-    - 500: Error SQL.
+  - **Successo**: Stato 201 con un messaggio di conferma e i dettagli del medico creato.
+  - **Errori**:
+    - **400**: Errori di validazione dell'input.
+    - **500**: Problema del server o errore SQL.
 
 ---
 
@@ -69,10 +69,11 @@ Questo documento spiega come utilizzare il modulo `doctorsController`, che gesti
 - **Parametri del corpo**: Gli stessi del metodo `store`.
 - **Validazioni**: Gli stessi del metodo `store`.
 - **Risposta**:
-  - Success: Restituisce uno stato 200 con un messaggio di Success.
-  - Error:
-    - 400: Errori di validazione dell'input.
-    - 500: Error SQL.
+  - **Successo**: Stato 200 con un messaggio di conferma e i dettagli aggiornati.
+  - **Errori**:
+    - **400**: Errori di validazione dell'input.
+    - **404**: Medico non trovato.
+    - **500**: Problema del server o errore SQL.
 
 ---
 
@@ -86,9 +87,11 @@ Questo documento spiega come utilizzare il modulo `doctorsController`, che gesti
 - **Parametri del corpo**:
   - Accetta un qualsiasi sottoinsieme dei campi utilizzati nel metodo `store`.
 - **Risposta**:
-  - Success: Restituisce uno stato 200 con un messaggio di Success.
-  - Error:
-    - 500: Error SQL.
+  - **Successo**: Stato 200 con un messaggio di conferma e i dettagli aggiornati.
+  - **Errori**:
+    - **400**: Errori di validazione dell'input.
+    - **404**: Medico non trovato.
+    - **500**: Problema del server o errore SQL.
 
 ---
 
@@ -100,6 +103,22 @@ Questo documento spiega come utilizzare il modulo `doctorsController`, che gesti
 - **Parametri**:
   - `id` (obbligatorio): ID del medico.
 - **Risposta**:
-  - Success: Restituisce uno stato 200 con un messaggio di Success.
-  - Error:
-    - 500: Error SQL.
+  - **Successo**: Stato 200 con un messaggio di conferma.
+  - **Errori**:
+    - **404**: Medico non trovato.
+    - **500**: Problema del server o errore SQL.
+
+---
+
+## Best Practices
+
+1. **Validazione lato client**: Assicurati che i dati inviati alle API siano già conformi alle regole di validazione.
+2. **Gestione degli errori**: Implementa un sistema di gestione degli errori lato client per gestire i vari stati di risposta.
+3. **Sicurezza**: Proteggi le rotte tramite autenticazione e autorizzazione, soprattutto per le operazioni di scrittura, modifica ed eliminazione.
+4. **Logging**: Mantieni un registro delle operazioni effettuate per scopi diagnostici e di auditing.
+
+---
+
+## Note Finali
+
+Questa guida descrive le funzionalità principali del modulo `doctorsController`. Per personalizzazioni o funzionalità aggiuntive, è possibile espandere le logiche del controller in modo modulare.
