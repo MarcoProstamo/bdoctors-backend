@@ -1,10 +1,24 @@
 import { connection } from "../db/connection.js";
 
+/**
+ *
+ * Ritorna Vero o Falso se l'Email è valida, ovvero se contiene esattamente una @ e un .
+ *
+ * @param {string} email
+ * @returns {boolean}
+ */
 function isValidEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
 
+/**
+ *
+ * Ritorna Vero o Falso se il Numero di Telefono è valida, ovvero se contiene esattamente 13 Caratteri di cui uno è il +, che deve essere primo nella stringa.
+ *
+ * @param {string} cellphone_number
+ * @returns {boolean}
+ */
 function isValidCellphoneNumber(cellphone_number) {
   const cellphoneNumberRegex = /^\+?[0-9]+$/;
   if (cellphone_number.length > 13 || cellphone_number.length < 13)
@@ -21,6 +35,7 @@ const doctorsController = {
       return res.json(results);
     });
   },
+
   show(req, res) {
     const doctorId = parseInt(req.params.id);
     if (isNaN(doctorId) || doctorId < 1)
@@ -75,6 +90,7 @@ const doctorsController = {
       });
     });
   },
+
   store(req, res) {
     const {
       name,
@@ -232,7 +248,6 @@ const doctorsController = {
     );
   },
 
-  // # BONUS --------
   modify(req, res) {
     const { ...allKeys } = req.body;
     const allEntries = Object.entries(allKeys);
@@ -259,7 +274,6 @@ const doctorsController = {
       }
     );
   },
-  // # BONUS --------
 
   destroy(req, res) {
     const doctorId = parseInt(req.params.id);

@@ -13,10 +13,6 @@ app.use(express.static("public"));
 import { doctorsRouter } from "./routers/doctorsRouter.js";
 app.use("/doctors", doctorsRouter);
 
-app.get("/", (req, res) => {
-  res.send("ciao");
-});
-
 // # Error Handlers
 app.use(errorsHandler);
 app.use(notFound);
