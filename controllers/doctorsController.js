@@ -2,7 +2,11 @@ import { connection } from "../db/connection.js";
 
 const doctorsController = {
   index(req, res) {
-    res.send("Index");
+    const sqlIndex = `SELECT doctors.id, doctors.name, doctors.surname, doctors.medical_specialization FROM doctors;`;
+    connection.query(sqlIndex, (err, results) => {
+      if (err) throw err;
+      res.json(results);
+    });
   },
   show(req, res) {
     res.send("show");
