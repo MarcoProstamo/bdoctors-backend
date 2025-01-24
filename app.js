@@ -11,7 +11,9 @@ app.use(express.static("public"));
 
 // # Router
 import { doctorsRouter } from "./routers/doctorsRouter.js";
+import { reviewsRouter } from "./routers/reviewsRouter.js";
 app.use("/doctors", doctorsRouter);
+app.use("/doctors/reviews", reviewsRouter);
 
 // # Error Handlers
 app.use(errorsHandler);
