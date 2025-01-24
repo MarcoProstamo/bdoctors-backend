@@ -28,10 +28,10 @@ const reviewsController = {
         .json({ status: "KO", message: "DoctorID is Not a Number" });
 
     // # Vote Between 1-5
-    if (vote < 1 || vote > 5)
+    if (vote < 0 || vote > 5)
       return res
         .status(400)
-        .json({ status: "KO", message: "Vote Must be Between 1 and 5" });
+        .json({ status: "KO", message: "Vote Must be Between 0 and 5" });
 
     const sqlCheckDoctorID = `SELECT doctors.id FROM bdoctors.doctors WHERE doctors.id = ?;`;
     connection.query(sqlCheckDoctorID, [doctor_id], (err, results) => {
