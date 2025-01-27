@@ -185,7 +185,7 @@ const doctorsController = {
       email,
       cellphone_number,
       address,
-      medical_specialization,
+      specialization_id,
     } = req.body;
     const doctorId = parseInt(req.params.id);
     if (isNaN(doctorId) || doctorId < 1)
@@ -200,7 +200,7 @@ const doctorsController = {
       !email ||
       !cellphone_number ||
       !address ||
-      !medical_specialization
+      !specialization_id
     )
       return res
         .status(400)
@@ -238,7 +238,7 @@ const doctorsController = {
           .status(400)
           .json({ status: "KO", message: "Email Arledy Exists" });
       const sqlUpdate =
-        "UPDATE `bdoctors`.`doctors` SET `name` = ?, `surname` = ?, `email` = ?, `cellphone_number` = ?, `address` = ?, `medical_specialization` = ? WHERE (`id` = ?);";
+        "UPDATE `bdoctors`.`doctors` SET `name` = ?, `surname` = ?, `email` = ?, `cellphone_number` = ?, `address` = ?, `specialization_id` = ? WHERE (`id` = ?);";
       connection.query(
         sqlUpdate,
         [
@@ -247,7 +247,7 @@ const doctorsController = {
           email,
           cellphone_number,
           address,
-          medical_specialization,
+          specialization_id,
           doctorId,
         ],
         (err, results) => {
@@ -256,7 +256,7 @@ const doctorsController = {
               .status(500)
               .json({ status: "KO", message: err.sqlMessage });
 
-          if (!results.length)
+          if (!results.affectedRows)
             return res
               .status(404)
               .json({ status: "KO", message: "Doctor Not Found" });
