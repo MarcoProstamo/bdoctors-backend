@@ -108,7 +108,7 @@ const doctorsController = {
       email,
       cellphone_number,
       address,
-      medical_specialization,
+      specialization_id,
     } = req.body;
 
     // # Input Empty
@@ -118,7 +118,7 @@ const doctorsController = {
       !email ||
       !cellphone_number ||
       !address ||
-      !medical_specialization
+      !specialization_id
     )
       return res
         .status(400)
@@ -159,18 +159,11 @@ const doctorsController = {
           .json({ status: "KO", message: "Email Arledy Exists" });
 
       const sqlStore =
-        "INSERT INTO `bdoctors`.`doctors` (`name`, `surname`, `email`, `cellphone_number`, `address`, `medical_specialization`) VALUES (?, ?, ?, ?, ?, ?);";
+        "INSERT INTO `bdoctors`.`doctors` (`name`, `surname`, `email`, `cellphone_number`, `address`, `specialization_id`) VALUES (?, ?, ?, ?, ?, ?);";
 
       connection.query(
         sqlStore,
-        [
-          name,
-          surname,
-          email,
-          cellphone_number,
-          address,
-          medical_specialization,
-        ],
+        [name, surname, email, cellphone_number, address, specialization_id],
         (err, results) => {
           if (err)
             return res
