@@ -12,8 +12,10 @@ app.use(express.static("public"));
 // # Router
 import { doctorsRouter } from "./routers/doctorsRouter.js";
 import { reviewsRouter } from "./routers/reviewsRouter.js";
+import { specializationsRouter } from "./routers/specializationsRouter.js";
 app.use("/doctors", doctorsRouter);
 app.use("/doctors/reviews", reviewsRouter);
+app.use("/doctors/specializations", specializationsRouter);
 
 // # Error Handlers
 app.use(errorsHandler);
