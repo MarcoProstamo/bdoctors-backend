@@ -13,9 +13,9 @@ app.use(express.static("public"));
 import { doctorsRouter } from "./routers/doctorsRouter.js";
 import { reviewsRouter } from "./routers/reviewsRouter.js";
 import { specializationsRouter } from "./routers/specializationsRouter.js";
-app.use("/doctors", doctorsRouter);
-app.use("/doctors/reviews", reviewsRouter);
-app.use("/doctors/specializations", specializationsRouter);
+app.use("/doctors", doctorsRouter); // Percorsi relativi ai medici
+app.use("/reviews", reviewsRouter); // Recensioni globali
+app.use("/specializations", specializationsRouter); // Specializzazioni globali
 
 // # Error Handlers
 app.use(errorsHandler);
