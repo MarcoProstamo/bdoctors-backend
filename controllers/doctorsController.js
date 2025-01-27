@@ -54,10 +54,12 @@ const doctorsController = {
        doctors.email, 
        doctors.cellphone_number, 
        doctors.address, 
-       doctors.medical_specialization,
        doctors.avg_vote,
-       doctors.image
+       doctors.image,
+       specializations.specialization
        FROM doctors
+       INNER JOIN specializations
+       ON doctors.specialization_id = specializations.id
        WHERE doctors.id = ?;
        `;
 
