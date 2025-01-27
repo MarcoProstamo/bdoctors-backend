@@ -150,25 +150,32 @@ const doctorsController = {
         return res
           .status(400)
           .json({ status: "KO", message: "Email Arledy Exists" });
-    });
 
-    const sqlStore =
-      "INSERT INTO `bdoctors`.`doctors` (`name`, `surname`, `email`, `cellphone_number`, `address`, `medical_specialization`) VALUES (?, ?, ?, ?, ?, ?);";
+      const sqlStore =
+        "INSERT INTO `bdoctors`.`doctors` (`name`, `surname`, `email`, `cellphone_number`, `address`, `medical_specialization`) VALUES (?, ?, ?, ?, ?, ?);";
 
-    connection.query(
-      sqlStore,
-      [name, surname, email, cellphone_number, address, medical_specialization],
-      (err, results) => {
-        if (err)
+      connection.query(
+        sqlStore,
+        [
+          name,
+          surname,
+          email,
+          cellphone_number,
+          address,
+          medical_specialization,
+        ],
+        (err, results) => {
+          if (err)
+            return res
+              .status(500)
+              .json({ status: "KO", message: err.sqlMessage });
+
           return res
-            .status(500)
-            .json({ status: "KO", message: err.sqlMessage });
-
-        return res
-          .status(201)
-          .json({ status: "OK", message: "Created Succesfully" });
-      }
-    );
+            .status(201)
+            .json({ status: "OK", message: "Created Succesfully" });
+        }
+      );
+    });
   },
 
   update(req, res) {
@@ -211,15 +218,6 @@ const doctorsController = {
         .status(400)
         .json({ status: "KO", message: "Address Too Short" });
 
-    // # Email Arledy Exists in DB
-    const sqlCheckEmail = `SELECT doctors.email FROM bdoctors.doctors WHERE doctors.email = ?;`;
-    connection.query(sqlCheckEmail, [email], (err, results) => {
-      if (results.length)
-        return res
-          .status(400)
-          .json({ status: "KO", message: "Email Arledy Exists" });
-    });
-
     // # Email is Valid
     if (!isValidEmail(email))
       return res
@@ -232,35 +230,43 @@ const doctorsController = {
         .status(400)
         .json({ status: "KO", message: "Cellphone Number is Not Valid" });
 
-    const sqlUpdate =
-      "UPDATE `bdoctors`.`doctors` SET `name` = ?, `surname` = ?, `email` = ?, `cellphone_number` = ?, `address` = ?, `medical_specialization` = ? WHERE (`id` = ?);";
-    connection.query(
-      sqlUpdate,
-      [
-        name,
-        surname,
-        email,
-        cellphone_number,
-        address,
-        medical_specialization,
-        doctorId,
-      ],
-      (err, results) => {
-        if (err)
-          return res
-            .status(500)
-            .json({ status: "KO", message: err.sqlMessage });
-
-        if (!results.length)
-          return res
-            .status(404)
-            .json({ status: "KO", message: "Doctor Not Found" });
-
+    // # Email Arledy Exists in DB
+    const sqlCheckEmail = `SELECT doctors.email FROM bdoctors.doctors WHERE doctors.email = ?;`;
+    connection.query(sqlCheckEmail, [email], (err, results) => {
+      if (results.length)
         return res
-          .status(200)
-          .json({ status: "OK", message: "Replaced Succesfully" });
-      }
-    );
+          .status(400)
+          .json({ status: "KO", message: "Email Arledy Exists" });
+      const sqlUpdate =
+        "UPDATE `bdoctors`.`doctors` SET `name` = ?, `surname` = ?, `email` = ?, `cellphone_number` = ?, `address` = ?, `medical_specialization` = ? WHERE (`id` = ?);";
+      connection.query(
+        sqlUpdate,
+        [
+          name,
+          surname,
+          email,
+          cellphone_number,
+          address,
+          medical_specialization,
+          doctorId,
+        ],
+        (err, results) => {
+          if (err)
+            return res
+              .status(500)
+              .json({ status: "KO", message: err.sqlMessage });
+
+          if (!results.length)
+            return res
+              .status(404)
+              .json({ status: "KO", message: "Doctor Not Found" });
+
+          return res
+            .status(200)
+            .json({ status: "OK", message: "Replaced Succesfully" });
+        }
+      );
+    });
   },
 
   modify(req, res) {
@@ -371,7 +377,9 @@ const doctorsController = {
     connection.query(sqlDestroy, [doctorId], (err, results) => {
       if (err)
         return res.status(500).json({ status: "KO", message: err.sqlMessage });
-      if (!results.length)
+      console.log(results);
+
+      if (!results.affectedRows)
         return res
           .status(404)
           .json({ status: "KO", message: "Doctor Not Found" });
