@@ -28,7 +28,12 @@ function isValidCellphoneNumber(cellphone_number) {
 
 const doctorsController = {
   index(req, res) {
-    const sqlIndex = `SELECT doctors.id, doctors.name, doctors.surname, doctors.medical_specialization, doctors.avg_vote, doctors.image FROM doctors;`;
+    const sqlIndex = `
+    SELECT doctors.id, doctors.name, doctors.surname, doctors.avg_vote, doctors.image, specializations.specialization
+    FROM doctors
+    INNER JOIN specializations
+    ON doctors.specialization_id = specializations.id;
+    `;
     connection.query(sqlIndex, (err, results) => {
       if (err)
         return res.status(500).json({ status: "KO", message: err.sqlMessage });
