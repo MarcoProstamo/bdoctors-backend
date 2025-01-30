@@ -91,10 +91,7 @@ const doctorsController = {
           return res
             .status(500)
             .json({ status: "KO", message: err.sqlMessage });
-        if (!results.length)
-          return res
-            .status(404)
-            .json({ status: "KO", message: "Reviews Not Found" });
+        if (!results.length) return res.json(doctor);
         doctor.reviews = results;
         return res.json(doctor);
       });
