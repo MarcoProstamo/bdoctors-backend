@@ -5,7 +5,7 @@ const reviewsController = {
     let { doctor_id, name, text, vote } = req.body;
 
     // # Input Empty
-    if (!doctor_id || !name || !vote)
+    if (!doctor_id || !name)
       return res.status(400).json({
         status: "KO",
         message: "DoctorID, Name or Vote Cannot be Empty",
